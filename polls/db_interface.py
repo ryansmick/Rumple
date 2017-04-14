@@ -43,6 +43,24 @@ class DBInterface:
             # Create a new vote
             Vote.objects.create(voter_id=user_id, option=chosen_option)
 
+    # Return a list of tuples containing the standings for the options for a given poll
+    # The list is sorted by highest votes first
+    # The tuples are formatted as follows: (option number (not id), option text, vote count)
+    def get_poll_standings(question_id):
+        options = DBInterface.get_sorted_options_for_question(question_id)
+
+        # For each option, get the count of votes and add it to the list
+        standings = []
+        for index, option in enumerate(options, 1):
+            vote_count = option.vote_set.count()
+            standing = (index, option.option_text, vote_count)
+            standings.append(standing)
+
+        # Sort the standings based on vote count
+        standings.sort(key=lambda x: x[2], reverse=True)
+
+        return standings
+
     # Return list containing all votes for a given question
     @staticmethod
     def get_all_votes_for_question(question_id):
