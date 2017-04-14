@@ -49,6 +49,21 @@ class TestDBInteraction(TestCase):
         self.assertEqual(len(Vote.objects.all()), 1) 
         self.assertEqual(Vote.objects.first().option.option_text, "Not so good") 
 
+    # Test that poll standings are correct and in the correct order
+    def test_poll_standings_accuracy_and_order(self):
+        question = Question.objects.create(question_text="How are you?", creator_id=4)
+        option1 = Option.objects.create(question=question, option_text="Good")
+        option2 = Option.objects.create(question=question, option_text="Not so good")
+        option3 = Option.objects.create(question=question, option_text="Terrible")
+        Vote.objects.create(option=option2, voter_id=1)
+        Vote.objects.create(option=option3, voter_id=2)
+        Vote.objects.create(option=option3, voter_id=3)
+        question_id = question.id
+
+        standings = DBInterface.get_poll_standings(question_id)
+
+        self.assertEqual(standings, [(3, "Terrible", 2), (2, "Not so good", 1), (1, "Good", 0)])
+
     # Test option ordering
     def test_options_sorted_by_id(self):
         question = Question.objects.create(question_text="How are you?", creator_id=4)
